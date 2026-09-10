@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
+/* El tema lo decide el atributo data-theme del <html>, no el sistema:
+   el script de layout.tsx lo escribe antes del primer pintado. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -12,15 +17,94 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+::selection { background: #e4e4e7; color: #18181b; }
+:focus-visible { outline: 2px solid #52525b; outline-offset: 5px; }
+
+@layer components {
+  .site-shell {
+    width: 100%;
+    max-width: 74rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+  .section-space { padding-block: clamp(4rem, 8vw, 6.5rem); }
+  .eyebrow {
+    @apply font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400;
+  }
+  .section-title {
+    @apply font-semibold text-zinc-950 dark:text-zinc-50;
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    line-height: 1.12;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+  .button-primary, .button-secondary {
+    @apply inline-flex min-h-12 items-center justify-center gap-4 rounded-full px-6 py-3 text-sm font-medium;
+    transition: background-color 180ms, color 180ms, transform 180ms;
+  }
+  .button-primary {
+    @apply bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white;
+  }
+  .button-secondary {
+    @apply border border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900;
+  }
+  .text-link {
+    @apply inline-block py-2 underline-offset-4 hover:underline;
+  }
+  .project-card, .tech-card {
+    transition: border-color 220ms, box-shadow 220ms, transform 220ms;
+  }
+}
+
+.gallery-dialog {
+  opacity: 0;
+  transition: opacity 180ms ease, display 180ms allow-discrete, overlay 180ms allow-discrete;
+}
+.gallery-dialog[open] { opacity: 1; }
+.gallery-dialog::backdrop {
+  background: rgb(0 0 0 / 85%);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 180ms ease, display 180ms allow-discrete, overlay 180ms allow-discrete;
+}
+.gallery-dialog[open]::backdrop { opacity: 1; }
+@starting-style {
+  .gallery-dialog[open], .gallery-dialog[open]::backdrop { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  .reveal { transition: opacity 440ms ease, transform 440ms cubic-bezier(0.2, 0.7, 0.3, 1); }
+  .reveal[data-pending="true"] { opacity: 0; transform: translateY(18px); }
+  .hero-enter { animation: enter 600ms both cubic-bezier(0.2, 0.7, 0.3, 1); }
+  .hero-art { animation-delay: 100ms; }
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (hover: hover) {
+    .project-card:hover { transform: translateY(-3px); box-shadow: 0 18px 40px -24px rgb(0 0 0 / 25%); }
+    .tech-card:hover { transform: translateY(-2px); border-color: #a1a1aa; }
+    .button-primary:hover, .button-secondary:hover { transform: translateY(-2px); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+@media print {
+  .reveal[data-pending="true"] { opacity: 1; transform: none; }
 }
